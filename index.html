@@ -1,132 +1,249 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Detroit Tigers Scoreboard</title>
-    <link rel="stylesheet" href="style.css">
+<meta charset="UTF-8">
+<title>Detroit Tigers Scoreboard</title>
+
+<style>
+body {
+    margin: 0;
+    background: #000;
+    color: #fff;
+    font-family: Arial, Helvetica, sans-serif;
+}
+
+.container {
+    padding: 25px;
+}
+
+h1 {
+    text-align: center;
+    color: #ffffff;
+    font-size: 48px;
+    margin-bottom: 40px;
+    letter-spacing: 2px;
+}
+
+.game {
+    max-width: 700px;
+    margin: auto;
+    padding: 25px;
+    border: 2px solid #333;
+    border-radius: 12px;
+    background: #111;
+}
+
+.team-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 12px 0;
+}
+
+.team-info {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+}
+
+.team-logo {
+    width: 56px;
+    height: 56px;
+    object-fit: contain;
+}
+
+.team-name {
+    font-size: 30px;
+    font-weight: bold;
+}
+
+.score {
+    font-size: 46px;
+    font-weight: bold;
+}
+
+.status {
+    text-align: center;
+    margin-top: 25px;
+    font-size: 44px;
+    font-weight: bold;
+    color: white;
+}
+
+.game-state {
+    margin-top: 30px;
+    display: flex;
+    justify-content: space-around;
+    align-items: center;
+}
+
+.bases {
+    width: 90px;
+    height: 90px;
+    position: relative;
+}
+
+.base {
+    width: 24px;
+    height: 24px;
+    border: 2px solid white;
+    position: absolute;
+    transform: rotate(45deg);
+    background: #333;
+}
+
+.base.on {
+    background: #ffd700;
+    border-color: #ffd700;
+}
+
+.first {
+    right: 0;
+    top: 33px;
+}
+
+.second {
+    left: 33px;
+    top: 0;
+}
+
+.third {
+    left: 0;
+    top: 33px;
+}
+
+.outs {
+    display: flex;
+    gap: 12px;
+}
+
+.out-circle {
+    width: 20px;
+    height: 20px;
+    border: 2px solid white;
+    border-radius: 50%;
+    background: #333;
+}
+
+.out-circle.on {
+    background: #ff3333;
+    border-color: #ff3333;
+}
+
+.no-game {
+    text-align: center;
+    font-size: 36px;
+    padding: 40px;
+}
+</style>
 </head>
+
 <body>
 
-    <div class="container">
-        <h1>DETROIT TIGERS</h1>
-        <div id="scores">Loading...</div>
-    </div>
+<div class="container">
+    <h1>DETROIT TIGERS</h1>
+    <div id="scores">Loading...</div>
+</div>
 
-    <script>
-        async function loadScores() {
+<script>
+async function loadScores() {
+    const today = new Date().toISOString().split('T')[0];
 
-            const today = new Date().toISOString().split('T')[0];
+    const response = await fetch(
+        `https://statsapi.mlb.com/api/v1/schedule?sportId=1&date=${today}&hydrate=linescore`
+    );
 
-            const response = await fetch(
-                `https://statsapi.mlb.com/api/v1/schedule?sportId=1&date=${today}&hydrate=linescore`
-            );
+    const data = await response.json();
 
-            const data = await response.json();
+    const tigersGames = data.dates[0]?.games.filter(game =>
+        game.teams.home.team.name === "Detroit Tigers" ||
+        game.teams.away.team.name === "Detroit Tigers"
+    );
 
-            let html = '';
+    let html = '';
 
-            const tigersGames = data.dates[0]?.games.filter(game =>
-                game.teams.home.team.name === "Detroit Tigers" ||
-                game.teams.away.team.name === "Detroit Tigers"
-            );
+    if (!tigersGames || tigersGames.length === 0) {
+        html = `<div class="no-game">No Tigers Game Today</div>`;
+    } else {
+        tigersGames.forEach(game => {
+            const away = game.teams.away.team.name;
+            const home = game.teams.home.team.name;
 
-            if (!tigersGames || tigersGames.length === 0) {
+            const awayId = game.teams.away.team.id;
+            const homeId = game.teams.home.team.id;
 
-                html = `
-                    <div class="no-game">
-                        No Tigers Game Today
-                    </div>
-                `;
+            const awayLogo = `https://www.mlbstatic.com/team-logos/${awayId}.svg`;
+            const homeLogo = `https://www.mlbstatic.com/team-logos/${homeId}.svg`;
 
-            } else {
+            const awayScore = game.teams.away.score ?? '-';
+            const homeScore = game.teams.home.score ?? '-';
 
-                tigersGames.forEach(game => {
+            const status = game.status.detailedState;
+            const linescore = game.linescore || {};
+            const outs = linescore.outs ?? 0;
 
-                    const away = game.teams.away.team.name;
-                    const home = game.teams.home.team.name;
+            let gameDetails = status;
 
-                    const awayScore = game.teams.away.score ?? '-';
-                    const homeScore = game.teams.home.score ?? '-';
+            if (status === "In Progress") {
+                let inningArrow = "▲";
 
-                    const status = game.status.detailedState;
-
-                    const linescore = game.linescore || {};
-
-                    const outs = linescore.outs ?? 0;
-
-                    let gameDetails = status;
-
-                    if (status === "In Progress") {
-
-                        let inningArrow = "▲";
-
-                        if (linescore.inningState === "Bottom") {
-                        inningArrow = "▼";
-                        }
-
-                   gameDetails = `${inningArrow} ${linescore.currentInning}`;
+                if (linescore.inningState === "Bottom") {
+                    inningArrow = "▼";
                 }
 
-                    html += `
-                        <div class="game">
-
-                            <div class="teams">
-
-                                <div class="team-row">
-                                    <span class="team-name">${away}</span>
-                                    <span class="score">${awayScore}</span>
-                                </div>
-
-                                <div class="team-row">
-                                    <span class="team-name">${home}</span>
-                                    <span class="score">${homeScore}</span>
-                                </div>
-
-                            </div>
-
-                            <div class="status">
-                                ${gameDetails}
-                            </div>
-
-                            ${status === "In Progress" ? `
-                            <div class="game-state">
-
-                                <div class="bases">
-
-                                    <div class="base second ${linescore?.offense?.second ? 'on' : ''}"></div>
-
-                                    <div class="base third ${linescore?.offense?.third ? 'on' : ''}"></div>
-
-                                    <div class="base first ${linescore?.offense?.first ? 'on' : ''}"></div>
-
-                                </div>
-
-                                <div class="outs">
-
-                                    <span class="out-circle ${outs >= 1 ? 'on' : ''}"></span>
-
-                                    <span class="out-circle ${outs >= 2 ? 'on' : ''}"></span>
-
-                                    <span class="out-circle ${outs >= 3 ? 'on' : ''}"></span>
-
-                                </div>
-
-                            </div>
-                            ` : ''}
-
-                        </div>
-                    `;
-                });
+                gameDetails = `${inningArrow} ${linescore.currentInning}`;
             }
 
-            document.getElementById('scores').innerHTML = html;
-        }
+            html += `
+                <div class="game">
 
-        loadScores();
+                    <div class="team-row">
+                        <div class="team-info">
+                            <img class="team-logo" src="${awayLogo}" alt="${away}">
+                            <span class="team-name">${away}</span>
+                        </div>
+                        <span class="score">${awayScore}</span>
+                    </div>
 
-        setInterval(loadScores, 60000);
-    </script>
+                    <div class="team-row">
+                        <div class="team-info">
+                            <img class="team-logo" src="${homeLogo}" alt="${home}">
+                            <span class="team-name">${home}</span>
+                        </div>
+                        <span class="score">${homeScore}</span>
+                    </div>
+
+                    <div class="status">${gameDetails}</div>
+
+                    ${status === "In Progress" ? `
+                    <div class="game-state">
+
+                        <div class="bases">
+                            <div class="base second ${linescore?.offense?.second ? 'on' : ''}"></div>
+                            <div class="base third ${linescore?.offense?.third ? 'on' : ''}"></div>
+                            <div class="base first ${linescore?.offense?.first ? 'on' : ''}"></div>
+                        </div>
+
+                        <div class="outs">
+                            <span class="out-circle ${outs >= 1 ? 'on' : ''}"></span>
+                            <span class="out-circle ${outs >= 2 ? 'on' : ''}"></span>
+                            <span class="out-circle ${outs >= 3 ? 'on' : ''}"></span>
+                        </div>
+
+                    </div>
+                    ` : ''}
+
+                </div>
+            `;
+        });
+    }
+
+    document.getElementById('scores').innerHTML = html;
+}
+
+loadScores();
+setInterval(loadScores, 60000);
+</script>
 
 </body>
 </html>
