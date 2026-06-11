@@ -172,24 +172,25 @@ async function loadScores() {
     
 async function loadNHL() {
     try {
-        const today = new Date().toISOString().split('T')[0];
-
         const response = await fetch(
-            `https://api-web.nhle.com/v1/score/${today}?_=${Date.now()}`,
+            `https://api-web.nhle.com/v1/scoreboard/now?_=${Date.now()}`,
             { cache: "no-store" }
         );
 
         const data = await response.json();
 
-        const playoffGames = data.games?.filter(game =>
+        const allGames = data.gamesByDate
+            ?.flatMap(day => day.games) || [];
+
+        const playoffGames = allGames.filter(game =>
             game.gameType === 3
-        ) || [];
+        );
 
         if (playoffGames.length === 0) {
             document.getElementById('nhl').innerHTML =
                 `<div class="game nhl-game">
                     <div class="section-title">STANLEY CUP PLAYOFFS</div>
-                    <div class="no-game">No Playoff Game Today</div>
+                    <div class="no-game">No Playoff Game Found</div>
                 </div>`;
             return;
         }
@@ -198,34 +199,37 @@ async function loadNHL() {
                      playoffGames.find(g => g.gameState === "FUT") ||
                      playoffGames[0];
 
-        const away = game.awayTeam?.abbrev || 'Away';
-        const home = game.homeTeam?.abbrev || 'Home';
+        const away = game.awayTeam?.abbrev || "Away";
+        const home = game.homeTeam?.abbrev || "Home";
 
-        const awayScore = game.awayTeam?.score ?? '-';
-        const homeScore = game.homeTeam?.score ?? '-';
+        const awayScore = game.awayTeam?.score ?? "-";
+        const homeScore = game.homeTeam?.score ?? "-";
 
         const awayLogo = game.awayTeam?.logo;
         const homeLogo = game.homeTeam?.logo;
 
-        let status = game.gameState;
+        let status = game.gameState || "";
 
         if (game.gameState === "LIVE") {
-            const period = game.periodDescriptor?.number || '';
-            const time = game.clock?.timeRemaining || '';
+            const period = game.periodDescriptor?.number || "";
+            const time = game.clock?.timeRemaining || "";
             status = `${period}${getOrdinal(period)} Period ${time}`;
         } else if (game.gameState === "FUT") {
             const gameDate = new Date(game.startTimeUTC);
-            status = gameDate.toLocaleTimeString([], {
-                hour: 'numeric',
-                minute: '2-digit'
+            status = gameDate.toLocaleDateString([], {
+                weekday: "short",
+                month: "short",
+                day: "numeric"
+            }) + " at " + gameDate.toLocaleTimeString([], {
+                hour: "numeric",
+                minute: "2-digit"
             });
-        } else if (game.gameState === "OFF") {
+        } else if (game.gameState === "OFF" || game.gameState === "FINAL") {
             status = "Final";
         }
 
         document.getElementById('nhl').innerHTML = `
             <div class="game nhl-game">
-
                 <div class="section-title">STANLEY CUP PLAYOFFS</div>
 
                 <div class="team-row">
@@ -245,7 +249,6 @@ async function loadNHL() {
                 </div>
 
                 <div class="status">${status}</div>
-
             </div>
         `;
 
@@ -254,6 +257,7 @@ async function loadNHL() {
             `<div class="game nhl-game">
                 <div class="section-title">STANLEY CUP PLAYOFFS</div>
                 <div class="no-game">Unable to load NHL scores</div>
+                <div class="sub-status">${error.message}</div>
             </div>`;
 
         console.error("NHL error:", error);
