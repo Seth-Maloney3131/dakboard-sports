@@ -21,10 +21,10 @@ body {
 
 
 .team-row {
-    display: flex;
+    display: grid;
+    grid-template-columns: 1fr 60px;
     align-items: center;
-    justify-content: flex-start;
-    padding: 12px 0;
+    gap: 10px;
 }
 
 
@@ -49,10 +49,8 @@ body {
 
 .score {
     font-size: 50px;
-     text-align: right;
     font-weight: bold;
-    margin-left: 15px;
-    flex: 0 0 auto;
+    text-align: right;
 }
 
 .status {
