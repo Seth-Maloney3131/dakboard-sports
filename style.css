@@ -10,15 +10,15 @@ body {
 }
 
 
-.game {
-    width: 900px;
-    max-width: 95vw;
-    margin: auto;
-    padding: 18px 28px;
-    border: 2px solid #333;
-    border-radius: 12px;
-    background: #111;
+
+
+    .game {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    height: 100%;
 }
+
 
 .team-row {
     display: flex;
@@ -34,25 +34,25 @@ body {
 }
 
 .team-logo {
-    width: 56px;
-    height: 56px;
+    width: min(6vw, 56px);
+    height: min(6vw, 56px);
     object-fit: contain;
 }
 
 .team-name {
-    font-size: 30px;
+    font-size: min(3vw, 30px);
     font-weight: bold;
 }
 
 .score {
-    font-size: 46px;
+    font-size: min(5vw, 46px);
     font-weight: bold;
 }
 
 .status {
     text-align: center;
     margin-top: 25px;
-    font-size: 44px;
+    font-size: min(4vw, 44px);
     font-weight: bold;
     color: white;
 }
@@ -60,15 +60,15 @@ body {
 .sub-status {
     text-align: center;
     margin-top: 10px;
-    font-size: 24px;
+    font-size: min(2vw, 24px);
     color: #bbb;
 }
 
 .game-state {
-    margin-top: 30px;
     display: flex;
-    justify-content: space-around;
+    justify-content: center;
     align-items: center;
+    gap: 50px;
 }
 
 .bases {
@@ -128,4 +128,9 @@ body {
     text-align: center;
     font-size: 36px;
     padding: 40px;
+}
+html, body {
+    width: 100%;
+    height: 100%;
+    overflow: hidden;
 }
