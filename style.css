@@ -22,16 +22,17 @@ body {
 
 .team-row {
     display: flex;
-    justify-content: space-between;
     align-items: center;
+    justify-content: flex-start;
     padding: 12px 0;
 }
+
 
 .team-info {
     display: flex;
     align-items: center;
-    gap: 14px;
-    width: 225px;
+    gap: 12px;
+    flex: 0 0 auto;
 }
 
 .team-logo {
@@ -49,6 +50,7 @@ body {
     font-size: 30px;
     font-weight: bold;
     margin-left: 15px;
+    flex: 0 0 auto;
 }
 
 .status {
