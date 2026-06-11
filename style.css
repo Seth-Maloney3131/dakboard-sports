@@ -31,22 +31,22 @@ body {
     display: flex;
     align-items: center;
     gap: 14px;
-    width: 325px;
+    width: 225px;
 }
 
 .team-logo {
-    width: min(6vw, 56px);
-    height: min(6vw, 56px);
+    width: 56px;
+    height: 56px;
     object-fit: contain;
 }
 
 .team-name {
-    font-size: min(3vw, 30px);
+    font-size: 30px;
     font-weight: bold;
 }
 
 .score {
-    font-size: min(3vw, 30px);
+    font-size: 30px;
     font-weight: bold;
     margin-left: 15px;
 }
@@ -54,7 +54,7 @@ body {
 .status {
     text-align: center;
     margin-top: 20px;
-    font-size: min(3vw, 30px);
+    font-size: 30px;
     font-weight: bold;
     color: white;
 }
@@ -62,7 +62,7 @@ body {
 .sub-status {
     text-align: center;
     margin-top: 10px;
-    font-size: min(2vw, 24px);
+    font-size: 24px;
     color: #bbb;
 }
 
