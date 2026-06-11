@@ -1,1 +1,82 @@
 
+<!DOCTYPE html>
+<html>
+<head>
+    <title>MLB Scores</title>
+    <style>
+        body {
+            background: black;
+            color: white;
+            font-family: Arial, sans-serif;
+            margin: 20px;
+        }
+
+        h1 {
+            text-align: center;
+        }
+
+        .game {
+            padding: 10px;
+            border-bottom: 1px solid #333;
+        }
+
+        .status {
+            color: #999;
+            font-size: 0.9em;
+        }
+    </style>
+</head>
+<body>
+
+<h1>MLB Scores</h1>
+
+<div id="scores">Loading...</div>
+
+<script>
+async function loadScores() {
+
+    const today = new Date().toISOString().split('T')[0];
+
+    const response = await fetch(
+        `https://statsapi.mlb.com/api/v1/schedule?sportId=1&date=${today}`
+    );
+
+    const data = await response.json();
+
+    let html = '';
+
+    if (data.dates.length === 0) {
+        html = 'No games today';
+    } else {
+
+        data.dates[0].games.forEach(game => {
+
+            const away = game.teams.away.team.name;
+            const home = game.teams.home.team.name;
+
+            const awayScore = game.teams.away.score ?? '-';
+            const homeScore = game.teams.home.score ?? '-';
+
+            const status = game.status.detailedState;
+
+            html += `
+                <div class="game">
+                    <strong>${away}</strong> ${awayScore}
+                    @
+                    <strong>${home}</strong> ${homeScore}
+                    <div class="status">${status}</div>
+                </div>
+            `;
+        });
+    }
+
+    document.getElementById('scores').innerHTML = html;
+}
+
+loadScores();
+
+setInterval(loadScores, 60000);
+</script>
+
+</body>
+</html>
