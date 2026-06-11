@@ -56,8 +56,9 @@ async function loadScores() {
     const endDate = getDateString(futureDate);
 
     const response = await fetch(
-        `https://statsapi.mlb.com/api/v1/schedule?sportId=1&teamId=${TIGERS_TEAM_ID}&startDate=${startDate}&endDate=${endDate}&hydrate=linescore`
-    );
+    `https://statsapi.mlb.com/api/v1/schedule?sportId=1&teamId=${TIGERS_TEAM_ID}&startDate=${startDate}&endDate=${endDate}&hydrate=linescore&_=${Date.now()}`,
+    { cache: "no-store" }
+);
 
     const data = await response.json();
     const games = data.dates.flatMap(date => date.games);
@@ -162,7 +163,7 @@ async function loadScores() {
 }
 
 loadScores();
-setInterval(loadScores, 60000);
+setInterval(loadScores, 15000);
 </script>
 
 </body>
