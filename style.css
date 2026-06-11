@@ -31,6 +31,7 @@ body {
     display: flex;
     align-items: center;
     gap: 14px;
+    width: 325px;
 }
 
 .team-logo {
@@ -45,14 +46,15 @@ body {
 }
 
 .score {
-    font-size: min(5vw, 46px);
+    font-size: min(3vw, 30px);
     font-weight: bold;
+    margin-left: 15px;
 }
 
 .status {
     text-align: center;
-    margin-top: 25px;
-    font-size: min(4vw, 44px);
+    margin-top: 20px;
+    font-size: min(3vw, 30px);
     font-weight: bold;
     color: white;
 }
