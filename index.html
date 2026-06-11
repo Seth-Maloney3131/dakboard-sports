@@ -45,11 +45,16 @@ async function loadScores() {
 
     let html = '';
 
-    if (data.dates.length === 0) {
-        html = 'No games today';
+    const tigersGames = data.dates[0]?.games.filter(game =>
+        game.teams.home.team.name === "Detroit Tigers" ||
+        game.teams.away.team.name === "Detroit Tigers"
+    );
+
+    if (!tigersGames || tigersGames.length === 0) {
+        html = '<h2>No Tigers game today</h2>';
     } else {
 
-        data.dates[0].games.forEach(game => {
+        tigersGames.forEach(game => {
 
             const away = game.teams.away.team.name;
             const home = game.teams.home.team.name;
