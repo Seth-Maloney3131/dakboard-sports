@@ -59,9 +59,14 @@
 
                     if (status === "In Progress") {
 
-                        gameDetails =
-                            `${linescore.inningState} ${linescore.currentInning}`;
-                    }
+                        let inningArrow = "▲";
+
+                        if (linescore.inningState === "Bottom") {
+                        inningArrow = "▼";
+                        }
+
+                   gameDetails = `${inningArrow} ${linescore.currentInning}`;
+                }
 
                     html += `
                         <div class="game">
