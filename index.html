@@ -172,24 +172,27 @@ async function loadScores() {
     
 async function loadNHL() {
     try {
-        const response = await fetch(
-            `https://api.allorigins.win/raw?url=${encodeURIComponent(
-            `https://api-web.nhle.com/v1/scoreboard/now?_=${Date.now()}`
-            )}`,
-                { cache: "no-store" }
-            );
+        const nhlUrl = "https://api-web.nhle.com/v1/scoreboard/now?_=" + Date.now();
+        const proxyUrl = "https://api.allorigins.win/raw?url=" + encodeURIComponent(nhlUrl);
+
+        const response = await fetch(proxyUrl, {
+            cache: "no-store"
+        });
+
+        if (!response.ok) {
+            throw new Error("HTTP " + response.status);
+        }
 
         const data = await response.json();
 
         const allGames = data.gamesByDate
-            ?.flatMap(day => day.games) || [];
+            ? data.gamesByDate.flatMap(day => day.games)
+            : [];
 
-        const playoffGames = allGames.filter(game =>
-            game.gameType === 3
-        );
+        const playoffGames = allGames.filter(game => game.gameType === 3);
 
         if (playoffGames.length === 0) {
-            document.getElementById('nhl').innerHTML =
+            document.getElementById("nhl").innerHTML =
                 `<div class="game nhl-game">
                     <div class="section-title">STANLEY CUP PLAYOFFS</div>
                     <div class="no-game">No Playoff Game Found</div>
@@ -207,8 +210,8 @@ async function loadNHL() {
         const awayScore = game.awayTeam?.score ?? "-";
         const homeScore = game.homeTeam?.score ?? "-";
 
-        const awayLogo = game.awayTeam?.logo;
-        const homeLogo = game.homeTeam?.logo;
+        const awayLogo = game.awayTeam?.logo || "";
+        const homeLogo = game.homeTeam?.logo || "";
 
         let status = game.gameState || "";
 
@@ -230,7 +233,7 @@ async function loadNHL() {
             status = "Final";
         }
 
-        document.getElementById('nhl').innerHTML = `
+        document.getElementById("nhl").innerHTML = `
             <div class="game nhl-game">
                 <div class="section-title">STANLEY CUP PLAYOFFS</div>
 
@@ -255,7 +258,7 @@ async function loadNHL() {
         `;
 
     } catch (error) {
-        document.getElementById('nhl').innerHTML =
+        document.getElementById("nhl").innerHTML =
             `<div class="game nhl-game">
                 <div class="section-title">STANLEY CUP PLAYOFFS</div>
                 <div class="no-game">Unable to load NHL scores</div>
