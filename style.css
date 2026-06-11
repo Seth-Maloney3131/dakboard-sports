@@ -138,3 +138,19 @@ html, body {
     height: 100%;
     overflow: hidden;
 }
+
+#nhl {
+    margin-top: 20px;
+}
+
+.section-title {
+    font-size: 24px;
+    font-weight: bold;
+    margin-bottom: 15px;
+    color: #ccc;
+    letter-spacing: 1px;
+}
+
+.nhl-game {
+    margin-top: 20px;
+}
