@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <title>Detroit Tigers Scoreboard</title>
-<link rel="stylesheet" href="style.css?v=10">
+<link rel="stylesheet" href="style.css?v=11">
 </head>
 
 <body>
@@ -91,7 +91,7 @@ async function loadScores() {
     const awayScore = game.teams.away.score ?? '-';
     const homeScore = game.teams.home.score ?? '-';
 
-    const status = game.status.detailedState;
+   
     const linescore = game.linescore || {};
     const outs = linescore.outs ?? 0;
 
