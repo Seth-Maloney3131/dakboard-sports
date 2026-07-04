@@ -3,13 +3,12 @@
 <head>
 <meta charset="UTF-8">
 <title>Detroit Tigers Scoreboard</title>
-<link rel="stylesheet" href="style.css?v=11">
+<link rel="stylesheet" href="style.css?v=12">
 </head>
 
 <body>
 
 <div class="container">
-    
     <div id="scores">Loading Tigers...</div>
     <div id="nhl">Loading NHL...</div>
 </div>
@@ -47,136 +46,152 @@ function getDateString(date) {
     return date.toISOString().split('T')[0];
 }
 
-async function loadScores() {
-    const today = new Date();
-
-    const futureDate = new Date();
-    futureDate.setDate(today.getDate() + 14);
-
-    const startDate = getDateString(today);
-    const endDate = getDateString(futureDate);
-
-    const response = await fetch(
-    `https://statsapi.mlb.com/api/v1/schedule?sportId=1&teamId=${TIGERS_TEAM_ID}&startDate=${startDate}&endDate=${endDate}&hydrate=linescore&_=${Date.now()}`,
-    { cache: "no-store" }
-);
-
-    const data = await response.json();
-    const games = data.dates.flatMap(date => date.games);
-
-    const nextGame = games.find(game => {
-        const status = game.status.detailedState;
-        return status !== "Final" &&
-               status !== "Game Over" &&
-               status !== "Completed Early";
-    });
-
-    if (!nextGame) {
-        document.getElementById('scores').innerHTML =
-            `<div class="no-game">No Upcoming Tigers Game</div>`;
-        return;
-    }
-
-    const game = nextGame;
-
-    const away = game.teams.away.team.name;
-    const home = game.teams.home.team.name;
-
-    const awayId = game.teams.away.team.id;
-    const homeId = game.teams.home.team.id;
-
-    const awayLogo = `https://www.mlbstatic.com/team-logos/${awayId}.svg`;
-    const homeLogo = `https://www.mlbstatic.com/team-logos/${homeId}.svg`;
-
-    const awayScore = game.teams.away.score ?? '-';
-    const homeScore = game.teams.home.score ?? '-';
-
-   
-    const linescore = game.linescore || {};
-    const outs = linescore.outs ?? 0;
-
-    let gameDetails = status;
-    let subStatus = '';
-
-    const gameDate = new Date(game.gameDate);
-    const status = game.status.detailedState;
-    const isLive = game.status.abstractGameState === "Live";
-
-
-
-
-const gameDate = new Date(game.gameDate);
-
-    if (isLive) {
-    let inningArrow = "▲";
-
-    if (linescore.inningState === "Bottom") {
-        inningArrow = "▼";
-    }
-
-    gameDetails = `${inningArrow} ${linescore.currentInning}`;
-} else if (status === "Scheduled" || status === "Pre-Game" || status === "Warmup") {
-    gameDetails = "Upcoming";
-
-    if (isSameLocalDay(gameDate, today)) {
-        subStatus = formatGameTime(game.gameDate);
-    } else {
-        subStatus = formatGameDateAndTime(game.gameDate);
-    }
-}
-
-    document.getElementById('scores').innerHTML = `
-        <div class="game">
-
-            <div class="team-row">
-                <div class="team-info">
-                    <img class="team-logo" src="${awayLogo}" alt="${away}">
-                    <span class="team-name">${away}</span>
-                </div>
-                <span class="score">${awayScore}</span>
-            </div>
-
-            <div class="team-row">
-                <div class="team-info">
-                    <img class="team-logo" src="${homeLogo}" alt="${home}">
-                    <span class="team-name">${home}</span>
-                </div>
-                <span class="score">${homeScore}</span>
-            </div>
-
-            <div class="status">${gameDetails}</div>
-
-            ${subStatus ? `<div class="sub-status">${subStatus}</div>` : ''}
-
-            ${isLive ? `
-            <div class="game-state">
-
-                <div class="bases">
-                    <div class="base second ${linescore?.offense?.second ? 'on' : ''}"></div>
-                    <div class="base third ${linescore?.offense?.third ? 'on' : ''}"></div>
-                    <div class="base first ${linescore?.offense?.first ? 'on' : ''}"></div>
-                </div>
-
-                <div class="outs">
-                    <span class="out-circle ${outs >= 1 ? 'on' : ''}"></span>
-                    <span class="out-circle ${outs >= 2 ? 'on' : ''}"></span>
-                    <span class="out-circle ${outs >= 3 ? 'on' : ''}"></span>
-                </div>
-
-            </div>
-            ` : ''}
-
-        </div>
-    `;
-}
-
-    function getOrdinal(number) {
+function getOrdinal(number) {
     if (number === 1) return "st";
     if (number === 2) return "nd";
     if (number === 3) return "rd";
     return "th";
 }
-    
+
+async function loadScores() {
+    try {
+        const today = new Date();
+
+        const futureDate = new Date();
+        futureDate.setDate(today.getDate() + 14);
+
+        const startDate = getDateString(today);
+        const endDate = getDateString(futureDate);
+
+        const response = await fetch(
+            `https://statsapi.mlb.com/api/v1/schedule?sportId=1&teamId=${TIGERS_TEAM_ID}&startDate=${startDate}&endDate=${endDate}&hydrate=linescore&_=${Date.now()}`,
+            { cache: "no-store" }
+        );
+
+        const data = await response.json();
+        const games = data.dates.flatMap(date => date.games);
+
+        const nextGame = games.find(game => {
+            const abstractState = game.status.abstractGameState;
+            const detailedState = game.status.detailedState;
+
+            return abstractState !== "Final" &&
+                   detailedState !== "Final" &&
+                   detailedState !== "Game Over" &&
+                   detailedState !== "Completed Early";
+        });
+
+        if (!nextGame) {
+            document.getElementById('scores').innerHTML =
+                `<div class="game">
+                    <div class="no-game">No Upcoming Tigers Game</div>
+                </div>`;
+            return;
+        }
+
+        const game = nextGame;
+
+        const away = game.teams.away.team.name;
+        const home = game.teams.home.team.name;
+
+        const awayId = game.teams.away.team.id;
+        const homeId = game.teams.home.team.id;
+
+        const awayLogo = `https://www.mlbstatic.com/team-logos/${awayId}.svg`;
+        const homeLogo = `https://www.mlbstatic.com/team-logos/${homeId}.svg`;
+
+        const awayScore = game.teams.away.score ?? '-';
+        const homeScore = game.teams.home.score ?? '-';
+
+        const status = game.status.detailedState;
+        const abstractState = game.status.abstractGameState;
+
+        const isLive = abstractState === "Live";
+
+        const linescore = game.linescore || {};
+        const outs = linescore.outs ?? 0;
+
+        let gameDetails = status;
+        let subStatus = '';
+
+        const gameDate = new Date(game.gameDate);
+
+        if (isLive) {
+            let inningArrow = "▲";
+
+            if (linescore.inningState === "Bottom") {
+                inningArrow = "▼";
+            }
+
+            gameDetails = `${inningArrow} ${linescore.currentInning}`;
+        } else if (
+            status === "Scheduled" ||
+            status === "Pre-Game" ||
+            status === "Warmup" ||
+            abstractState === "Preview"
+        ) {
+            gameDetails = "Upcoming";
+
+            if (isSameLocalDay(gameDate, today)) {
+                subStatus = formatGameTime(game.gameDate);
+            } else {
+                subStatus = formatGameDateAndTime(game.gameDate);
+            }
+        }
+
+        document.getElementById('scores').innerHTML = `
+            <div class="game">
+
+                <div class="team-row">
+                    <div class="team-info">
+                        <img class="team-logo" src="${awayLogo}" alt="${away}">
+                        <span class="team-name">${away}</span>
+                    </div>
+                    <span class="score">${awayScore}</span>
+                </div>
+
+                <div class="team-row">
+                    <div class="team-info">
+                        <img class="team-logo" src="${homeLogo}" alt="${home}">
+                        <span class="team-name">${home}</span>
+                    </div>
+                    <span class="score">${homeScore}</span>
+                </div>
+
+                <div class="status">${gameDetails}</div>
+
+                ${subStatus ? `<div class="sub-status">${subStatus}</div>` : ''}
+
+                ${isLive ? `
+                <div class="game-state">
+
+                    <div class="bases">
+                        <div class="base second ${linescore?.offense?.second ? 'on' : ''}"></div>
+                        <div class="base third ${linescore?.offense?.third ? 'on' : ''}"></div>
+                        <div class="base first ${linescore?.offense?.first ? 'on' : ''}"></div>
+                    </div>
+
+                    <div class="outs">
+                        <span class="out-circle ${outs >= 1 ? 'on' : ''}"></span>
+                        <span class="out-circle ${outs >= 2 ? 'on' : ''}"></span>
+                        <span class="out-circle ${outs >= 3 ? 'on' : ''}"></span>
+                    </div>
+
+                </div>
+                ` : ''}
+
+            </div>
+        `;
+
+    } catch (error) {
+        document.getElementById('scores').innerHTML =
+            `<div class="game">
+                <div class="no-game">Unable to load Tigers score</div>
+                <div class="sub-status">${error.message}</div>
+            </div>`;
+    }
+}
+
 async function loadNHL() {
     try {
         const response = await fetch(
@@ -253,12 +268,6 @@ async function loadNHL() {
     }
 }
 
-
-
-
-
-
-    
 loadScores();
 loadNHL();
 
