@@ -99,24 +99,31 @@ async function loadScores() {
     let subStatus = '';
 
     const gameDate = new Date(game.gameDate);
+    const status = game.status.detailedState;
+    const isLive = game.status.abstractGameState === "Live";
 
-    if (status === "In Progress") {
-        let inningArrow = "▲";
 
-        if (linescore.inningState === "Bottom") {
-            inningArrow = "▼";
-        }
 
-        gameDetails = `${inningArrow} ${linescore.currentInning}`;
-    } else if (status === "Scheduled" || status === "Pre-Game" || status === "Warmup") {
-        gameDetails = "Upcoming";
 
-        if (isSameLocalDay(gameDate, today)) {
-            subStatus = formatGameTime(game.gameDate);
-        } else {
-            subStatus = formatGameDateAndTime(game.gameDate);
-        }
+const gameDate = new Date(game.gameDate);
+
+    if (isLive) {
+    let inningArrow = "▲";
+
+    if (linescore.inningState === "Bottom") {
+        inningArrow = "▼";
     }
+
+    gameDetails = `${inningArrow} ${linescore.currentInning}`;
+} else if (status === "Scheduled" || status === "Pre-Game" || status === "Warmup") {
+    gameDetails = "Upcoming";
+
+    if (isSameLocalDay(gameDate, today)) {
+        subStatus = formatGameTime(game.gameDate);
+    } else {
+        subStatus = formatGameDateAndTime(game.gameDate);
+    }
+}
 
     document.getElementById('scores').innerHTML = `
         <div class="game">
@@ -141,7 +148,7 @@ async function loadScores() {
 
             ${subStatus ? `<div class="sub-status">${subStatus}</div>` : ''}
 
-            ${status === "In Progress" ? `
+            ${isLive ? `
             <div class="game-state">
 
                 <div class="bases">
