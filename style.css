@@ -154,3 +154,49 @@ html, body {
 .nhl-game {
     margin-top: 20px;
 }
+/* RED WINGS SCOREBOARD LAYOUT */
+
+#nhl .team-row {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) 55px;
+    align-items: center;
+    gap: 12px;
+    padding: 8px 0;
+}
+
+#nhl .team-info {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    width: auto;
+    min-width: 0;
+}
+
+#nhl .team-logo {
+    width: 45px;
+    height: 45px;
+    object-fit: contain;
+    flex-shrink: 0;
+}
+
+#nhl .team-name {
+    font-size: 28px;
+    font-weight: bold;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    min-width: 0;
+}
+
+#nhl .score {
+    font-size: 32px;
+    font-weight: bold;
+    text-align: right;
+    margin-left: 0;
+    width: auto;
+}
+
+#nhl .status {
+    font-size: 28px;
+    margin-top: 12px;
+}
